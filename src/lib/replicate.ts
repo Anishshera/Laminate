@@ -1,16 +1,19 @@
 import Replicate from "replicate";
 
-// Initialize Replicate client with environment variable
+// Ensure environment variable is set, else throw at runtime
+const replicateToken = process.env.REPLICATE_API_TOKEN;
+if (!replicateToken) throw new Error("REPLICATE_API_TOKEN is not set in environment!");
+
 const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN!, // '!' ensures TypeScript that token is defined
+  auth: replicateToken,
 });
 
 /**
  * Detect furniture sections in an image using SAM2 model
  */
-export async function segmentImage(imageUrl: string): Promise<any> {
+export async function segmentImage(imageUrl: string): Promise<any | null> {
   try {
-    const output = await replicate.run(
+    const output: any = await replicate.run(
       "facebook/sam2-hiera-large:2c0175ce987311b35df9a4d4e5e53e6d6c3e1d5b4c9a5f1e5e5e5e5e5e5e5e",
       {
         input: {
@@ -20,7 +23,6 @@ export async function segmentImage(imageUrl: string): Promise<any> {
       }
     );
 
-    // TypeScript safe: output can be anything
     return output ?? null;
   } catch (err) {
     console.error("Segment image error:", err);
@@ -50,7 +52,6 @@ export async function applyLaminate(
       }
     );
 
-    // Safe check before returning
     if (Array.isArray(output) && output.length > 0) return output[0] as string;
     if (typeof output === "string") return output;
     
