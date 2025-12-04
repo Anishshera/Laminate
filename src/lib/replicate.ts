@@ -1,7 +1,13 @@
 import Replicate from 'replicate';
 
+// Ensure the environment variable is set
+const replicateToken = process.env.REPLICATE_API_TOKEN;
+if (!replicateToken) {
+  throw new Error("REPLICATE_API_TOKEN is not set in environment variables");
+}
+
 const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN,
+  auth: replicateToken,
 });
 
 export async function segmentImage(imageUrl: string) {
@@ -17,12 +23,19 @@ export async function segmentImage(imageUrl: string) {
   return output;
 }
 
-export async function applyLaminate(rawImageUrl: string, laminateUrl: string, prompt: string, masks: any) {
+export async function applyLaminate(
+  rawImageUrl: string,
+  laminateUrl: string,
+  prompt: string,
+  masks: any
+) {
   const output = await replicate.run(
     "black-forest-labs/flux-schnell:2a4f2a4f2a4f2a4f2a4f2a4f2a4f2a4f", // Flux model ID
     {
       input: {
-        prompt: `Apply laminate texture from ${laminateUrl} to detected furniture sections in ${rawImageUrl}. Use masks: ${JSON.stringify(masks)}. ${prompt}`,
+        prompt: `Apply laminate texture from ${laminateUrl} to detected furniture sections in ${rawImageUrl}. Use masks: ${JSON.stringify(
+          masks
+        )}. ${prompt}`,
         image: rawImageUrl,
       },
     }
