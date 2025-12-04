@@ -33,6 +33,13 @@ export default function Home() {
 
   return (
     <>
+      {/* Header */}
+      <header className="bg-indigo-600 text-white py-6 shadow-md">
+        <div className="max-w-7xl mx-auto px-6 text-center text-3xl font-bold">
+          LaminateAI – Free AI Laminate Tool
+        </div>
+      </header>
+
       {/* Hero + Title */}
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
         <div className="max-w-7xl mx-auto px-6 pt-16 pb-10 text-center">
@@ -43,7 +50,7 @@ export default function Home() {
             Free AI Laminate Try-On Tool – 5 Second Mein Perfect Preview!
           </p>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Plywood photo daalo → Laminate lagaao → Client ko turant dikhao! No login • No watermark • Unlimited free
+            Apna plywood ka kaam hua photo upload karo → Laminate lagaao → Client ko turant dikhao! No login • No watermark • Unlimited free
           </p>
         </div>
 
@@ -55,7 +62,7 @@ export default function Home() {
               <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-10 hover:scale-105 transition">
                 <div className="text-7xl mb-6">1</div>
                 <h3 className="text-3xl font-bold mb-4">Raw Photo Upload</h3>
-                <p className="text-xl opacity-90">Wardrobe, kitchen, table – jo bhi bana rahe ho</p>
+                <p className="text-xl opacity-90">Apna plywood / furniture ka kaam hua photo upload karo</p>
               </div>
               <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-10 hover:scale-105 transition">
                 <div className="text-7xl mb-6">2</div>
@@ -86,7 +93,7 @@ export default function Home() {
             <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
               <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-8 text-center">
                 <h2 className="text-4xl font-bold">Design Studio – Sabse Powerful Feature</h2>
-                <p className="text-xl mt-2 opacity-90">Yahan aap pura control mein ho!</p>
+                <p className="text-xl mt-2 opacity-90">Apna plywood ka kaam aur laminate ka control yahan milega</p>
               </div>
 
               <div className="p-10">
@@ -97,6 +104,7 @@ export default function Home() {
                       <h3 className="text-3xl font-bold mb-5 text-indigo-900">1. Raw Plywood Photo</h3>
                       <input type="file" accept="image/*" onChange={(e) => handleUpload(e, 'raw')} className="w-full file:mr-6 file:py-5 file:px-10 file:rounded-full file:border-0 file:bg-gradient-to-r file:from-indigo-600 file:to-purple-600 file:text-white text-xl cursor-pointer" />
                       {rawPhoto && <img src={rawPhoto} alt="Raw" className="mt-6 rounded-3xl shadow-2xl w-full border-4 border-indigo-100" />}
+                      <p className="mt-2 text-gray-600">Apna plywood / furniture ka kaam hua photo yahan dikh raha hai</p>
                     </div>
 
                     <div>
@@ -112,6 +120,7 @@ export default function Home() {
                           </div>
                         ))}
                       </div>
+                      <p className="mt-2 text-gray-600">Yahan upload kiye laminate dikh rahe hai, maximum 5</p>
                     </div>
 
                     <div>
@@ -122,6 +131,7 @@ export default function Home() {
                         onChange={(e) => setPrompt(e.target.value)}
                         className="w-full p-8 border-4 border-indigo-200 rounded-3xl text-xl focus:border-indigo-600 outline-none h-48 resize-none"
                       />
+                      <p className="mt-2 text-gray-600">Prompt se AI ko batao kaunsa laminate kaha lagana hai</p>
                     </div>
 
                     <button
@@ -163,6 +173,13 @@ export default function Home() {
           )}
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-indigo-900 text-white py-8 mt-20">
+        <div className="max-w-7xl mx-auto px-6 text-center text-lg">
+          © 2025 LaminateAI. All rights reserved. | Made with ❤️ by Anish Shera
+        </div>
+      </footer>
     </>
   );
 }
