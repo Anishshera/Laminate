@@ -1,8 +1,8 @@
 import Replicate from "replicate";
 
-// TypeScript ko batane ke liye ki ye value hamesha defined hai
+// Use your API token directly (or from env)
 const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN!, // <-- exclamation mark lagao
+  auth: process.env.REPLICATE_API_TOKEN || "6cc931f4a19ec156307f2ea4ef17c5ec36a5f5e3",
 });
 
 /**
@@ -17,7 +17,7 @@ export async function segmentImage(imageUrl: string) {
         prompt: "Detect furniture sections like doors, drawers, top, sides",
       },
     }
-  );
+  ) as any[]; // <-- TypeScript ko bata diya ki output array hai
 
   return output;
 }
@@ -41,7 +41,7 @@ export async function applyLaminate(
         image: rawImageUrl,
       },
     }
-  );
+  ) as string[]; // <-- TypeScript ko bata diya ki output string array hai
 
-  return output[0] as string;
+  return output[0]; // ab valid hai
 }
