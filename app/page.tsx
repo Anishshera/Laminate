@@ -1,188 +1,86 @@
-'use client';
-import { useState, useRef, useEffect } from "react";
+"use client";
+import React, { useState } from "react";
 
-export default function Home() {
-  const [tab, setTab] = useState("studio");
+export default function LaminateVisualizer() {
+  const [image, setImage] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string>("");
+  const [texturePreview, setTexturePreview] = useState<string>("");
 
-  const [rawPhoto, setRawPhoto] = useState<string | null>(null);
-  const [laminates, setLaminates] = useState<string[]>([]);
-  const [chat, setChat] = useState<{role:"user"|"ai",text:string}[]>([]);
-  const [input,setInput]=useState("");
-  const [preview,setPreview]=useState<string|null>(null);
-  const inputRef = useRef<HTMLTextAreaElement|null>(null);
-  const chatEndRef = useRef<HTMLDivElement|null>(null);
-
-  /** Upload Handler **/
-  const handleUpload = (e:any,type:'photo'|'laminate')=>{
-    const file=e.target.files?.[0];
-    if(!file) return;
-    const url=URL.createObjectURL(file);
-
-    if(type==="photo") setRawPhoto(url);
-    if(type==="laminate"){
-      if(laminates.length>=5) return alert("Max 5 laminates allowed");
-      setLaminates([...laminates,url]);
+  const handleMainImageUpload = (file: File | null) => {
+    if (file) {
+      setImage(file);
+      setPreview(URL.createObjectURL(file));
     }
   };
 
-  /** ChatGPT style send **/
-  const sendPrompt = ()=>{
-    if(!input.trim()) return;
-    setChat(c=>[...c,{role:"user",text:input}]);
-
-    setTimeout(()=>{
-      setChat(c=>[...c,{role:"ai",text:"Applying laminate as per your instruction..."}]);
-      setPreview(rawPhoto); // placeholder, later replace with AI-generated result
-    },800);
-
-    setInput("");
-  };
-
-  /** ENTER submit **/
-  const keyPress=(e:any)=>{
-    if(e.key==="Enter" && !e.shiftKey){
-      e.preventDefault();
-      sendPrompt();
+  const handleTextureUpload = (file: File | null) => {
+    if (file) {
+      setTexturePreview(URL.createObjectURL(file));
     }
   };
-
-  /** Download **/
-  const downloadImg = ()=>{
-    if(!preview) return;
-    const link=document.createElement("a");
-    link.href=preview;
-    link.download="design-preview.jpg";
-    link.click();
-  };
-
-  /** Share **/
-  const shareImg=()=>{
-    if(navigator.share && preview){
-      navigator.share({
-        title:"Laminate AI Result",
-        text:"Check my design preview",
-        url:preview
-      });
-    } else alert("Sharing not supported in this browser");
-  };
-
-  /** Scroll chat to bottom **/
-  useEffect(()=>{
-    chatEndRef.current?.scrollIntoView({behavior:'smooth'});
-  },[chat]);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8 text-gray-900">
+    <div className="min-h-screen bg-gray-100 p-8">
+      <h1 className="text-4xl font-bold text-center mb-6">Laminate Visualizer</h1>
 
-      {/* Header */}
-      <h1 className="text-5xl font-extrabold text-center text-indigo-700 mb-6">
-        Home Decor AI Studio
-      </h1>
+      {/* Upload Main Room Image */}
+      <div className="bg-white p-6 rounded-xl shadow-md max-w-xl mx-auto mb-8 text-center">
+        <h2 className="text-xl font-semibold mb-3">Upload Room Image</h2>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => handleMainImageUpload(e.target.files?.[0] ?? null)}
+          className="file:px-5 file:py-2 file:bg-indigo-600 file:text-white rounded block mx-auto cursor-pointer"
+        />
 
-      {/* TABS */}
-      <div className="flex gap-4 justify-center mb-10">
-        {[
-          {id:"instant",label:"⚡ Instant Inspiration"},
-          {id:"quick",label:"🖼 Quick Preview"},
-          {id:"studio",label:"🎨 Design Studio"}
-        ].map(t=>(
-          <button key={t.id}
-            onClick={()=>setTab(t.id)}
-            className={`px-6 py-3 rounded-xl font-semibold transition ${
-                tab===t.id?"bg-indigo-600 text-white shadow-lg":"bg-white shadow"
-            }`}>
-            {t.label}
-          </button>
-        ))}
+        {preview && (
+          <img
+            src={preview}
+            alt="Room Preview"
+            className="mt-4 rounded-lg shadow w-full"
+          />
+        )}
       </div>
 
-      {/* TOOL - 1 : Instant Inspiration */}
-      {tab==="instant" &&(
-        <div className="bg-white p-10 rounded-3xl shadow-xl text-center">
-          <h2 className="text-3xl font-bold mb-3">Instant Inspiration 🔥</h2>
-          <p className="text-gray-600 mb-6">AI randomly generates laminate ideas for your furniture.</p>
+      {/* Upload Laminate Texture */}
+      <div className="bg-white p-6 rounded-xl shadow-md max-w-xl mx-auto mb-8 text-center">
+        <h2 className="text-xl font-semibold mb-3">Upload Laminate Texture</h2>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => handleTextureUpload(e.target.files?.[0] ?? null)}
+          className="file:px-5 file:py-2 file:bg-green-600 file:text-white rounded block mx-auto cursor-pointer"
+        />
 
-          <button className="px-8 py-4 text-xl bg-purple-600 text-white rounded-xl font-bold">
-            Generate Ideas (Placeholder)
-          </button>
+        {texturePreview && (
+          <img
+            src={texturePreview}
+            alt="Laminate Texture"
+            className="mt-4 rounded-lg shadow w-full object-cover"
+          />
+        )}
+      </div>
 
-          <p className="text-sm text-gray-400 mt-3">Later we will connect AI moodboard generator.</p>
-        </div>
-      )}
+      {/* Preview Side-by-Side */}
+      {preview && texturePreview && (
+        <div className="max-w-5xl mx-auto bg-white p-6 rounded-xl shadow text-center">
+          <h2 className="text-xl font-semibold mb-4">Comparison Preview</h2>
 
-      {/* TOOL - 2 : Quick Preview */}
-      {tab==="quick" &&(
-        <div className="bg-white p-10 rounded-3xl shadow-xl">
-          <h2 className="text-3xl font-bold mb-5 text-center">Quick Preview 🖼</h2>
-
-          <input type="file" accept="image/*"
-            onChange={(e)=>setPreview(URL.createObjectURL(e.target.files?.[0]||null))}
-            className="file:px-5 file:py-2 file:bg-indigo-600 file:text-white rounded mb-6 block mx-auto"/>
-
-          {preview?
-            <img src={preview} className="mx-auto rounded-xl shadow-lg max-h-[70vh]"/>:
-            <p className="text-center text-gray-500">Upload image to preview</p>
-          }
-        </div>
-      )}
-
-      {/* TOOL - 3 : Design Studio AI */}
-      {tab==="studio" &&(
-        <div className="bg-white shadow-2xl rounded-3xl p-10">
-          <h2 className="text-3xl font-bold text-center mb-8 text-indigo-700">Design Studio</h2>
-
-          <div className="grid grid-cols-12 gap-6">
-
-            {/* LEFT Upload */}
-            <div className="col-span-12 md:col-span-3 space-y-5">
-              <p className="font-bold">Upload Furniture</p>
-              <input type="file" accept="image/*"
-                onChange={(e)=>handleUpload(e,"photo")}
-                className="file:bg-indigo-600 file:text-white file:px-4 file:py-2 rounded w-full"/>
-
-              {rawPhoto && <img src={rawPhoto} className="rounded shadow mt-2"/>}
-
-              <p className="font-bold mt-5">Add Laminates (5 max)</p>
-              <input type="file" accept="image/*"
-                onChange={(e)=>handleUpload(e,"laminate")}
-                className="file:bg-purple-600 file:text-white file:px-4 file:py-2 rounded w-full"/>
-
-              <div className="grid grid-cols-3 gap-2">
-                {laminates.map((l,i)=><img key={i} src={l} className="rounded shadow h-16"/>)}
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <p className="font-semibold mb-2">Original Image</p>
+              <img src={preview} className="rounded-lg shadow w-full" />
             </div>
 
-            {/* CENTER Preview */}
-            <div className="col-span-12 md:col-span-6 flex items-center justify-center bg-gray-50 rounded-xl p-4">
-              {preview?<img src={preview} className="rounded-xl shadow max-h-[70vh]"/>:
-                <p className="text-gray-400">Preview will appear here</p>}
-            </div>
-
-            {/* RIGHT Chat-Prompt */}
-            <div className="col-span-12 md:col-span-3 flex flex-col">
-              <div className="flex-1 overflow-y-auto bg-gray-50 rounded-xl p-3 space-y-2 mb-4">
-                {chat.map((m,i)=>(
-                  <p key={i} className={`${m.role==="user"?"text-blue-600":"text-gray-800"} text-sm`}>
-                    <b>{m.role==="user"?"You":"AI"}:</b> {m.text}
-                  </p>
-                ))}
-                <div ref={chatEndRef}></div>
-              </div>
-
-              <textarea ref={inputRef}
-                value={input} onChange={(e)=>setInput(e.target.value)}
-                onKeyDown={keyPress}
-                placeholder="Type laminate instruction and press Enter..."
-                className="flex-1 p-3 rounded-xl border h-20 resize-none mb-2"/>
-
-              {preview &&(
-                <div className="mt-2 grid grid-cols-2 gap-3">
-                  <button onClick={downloadImg} className="bg-black text-white py-2 rounded-lg">Download</button>
-                  <button onClick={shareImg} className="bg-indigo-600 text-white py-2 rounded-lg">Share</button>
-                </div>
-              )}
+            <div>
+              <p className="font-semibold mb-2">Laminate Texture</p>
+              <img src={texturePreview} className="rounded-lg shadow w-full" />
             </div>
           </div>
+
+          <button className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Apply Laminate (Next Step)
+          </button>
         </div>
       )}
     </div>
