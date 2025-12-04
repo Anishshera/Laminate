@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  experimental: {
+    srcDir: true,  // Ye src/app ko root samajhega
+  },
   images: {
     remotePatterns: [
       {
