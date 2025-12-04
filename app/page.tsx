@@ -1,6 +1,5 @@
-"use client";
-
-import { useState, useRef } from "react";
+'use client';
+import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
   const [tab, setTab] = useState("studio");
@@ -11,15 +10,16 @@ export default function Home() {
   const [input,setInput]=useState("");
   const [preview,setPreview]=useState<string|null>(null);
   const inputRef = useRef<HTMLTextAreaElement|null>(null);
+  const chatEndRef = useRef<HTMLDivElement|null>(null);
 
   /** Upload Handler **/
   const handleUpload = (e:any,type:'photo'|'laminate')=>{
     const file=e.target.files?.[0];
-    if(!file)return;
+    if(!file) return;
     const url=URL.createObjectURL(file);
 
     if(type==="photo") setRawPhoto(url);
-    if(type==="laminate") {
+    if(type==="laminate"){
       if(laminates.length>=5) return alert("Max 5 laminates allowed");
       setLaminates([...laminates,url]);
     }
@@ -28,13 +28,11 @@ export default function Home() {
   /** ChatGPT style send **/
   const sendPrompt = ()=>{
     if(!input.trim()) return;
-
     setChat(c=>[...c,{role:"user",text:input}]);
 
-    // ⬇ Final AI later — abhi rawPhoto preview render karega
     setTimeout(()=>{
-      setChat(c=>[...c,{role:"ai",text:"Applying laminate..."}]);
-      setPreview(rawPhoto);
+      setChat(c=>[...c,{role:"ai",text:"Applying laminate as per your instruction..."}]);
+      setPreview(rawPhoto); // placeholder, later replace with AI-generated result
     },800);
 
     setInput("");
@@ -50,7 +48,7 @@ export default function Home() {
 
   /** Download **/
   const downloadImg = ()=>{
-    if(!preview)return;
+    if(!preview) return;
     const link=document.createElement("a");
     link.href=preview;
     link.download="design-preview.jpg";
@@ -65,9 +63,13 @@ export default function Home() {
         text:"Check my design preview",
         url:preview
       });
-    }else alert("Sharing not supported in this browser");
+    } else alert("Sharing not supported in this browser");
   };
 
+  /** Scroll chat to bottom **/
+  useEffect(()=>{
+    chatEndRef.current?.scrollIntoView({behavior:'smooth'});
+  },[chat]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-8 text-gray-900">
@@ -94,8 +96,7 @@ export default function Home() {
         ))}
       </div>
 
-
-      {/* ---------------- TOOL - 1 : Instant Inspiration ---------------- */}
+      {/* TOOL - 1 : Instant Inspiration */}
       {tab==="instant" &&(
         <div className="bg-white p-10 rounded-3xl shadow-xl text-center">
           <h2 className="text-3xl font-bold mb-3">Instant Inspiration 🔥</h2>
@@ -109,8 +110,7 @@ export default function Home() {
         </div>
       )}
 
-
-      {/* ---------------- TOOL - 2 : Quick Preview ---------------- */}
+      {/* TOOL - 2 : Quick Preview */}
       {tab==="quick" &&(
         <div className="bg-white p-10 rounded-3xl shadow-xl">
           <h2 className="text-3xl font-bold mb-5 text-center">Quick Preview 🖼</h2>
@@ -126,8 +126,7 @@ export default function Home() {
         </div>
       )}
 
-
-      {/* ---------------- TOOL - 3 : Design Studio AI (MAIN) ---------------- */}
+      {/* TOOL - 3 : Design Studio AI */}
       {tab==="studio" &&(
         <div className="bg-white shadow-2xl rounded-3xl p-10">
           <h2 className="text-3xl font-bold text-center mb-8 text-indigo-700">Design Studio</h2>
@@ -153,15 +152,13 @@ export default function Home() {
               </div>
             </div>
 
-
             {/* CENTER Preview */}
             <div className="col-span-12 md:col-span-6 flex items-center justify-center bg-gray-50 rounded-xl p-4">
               {preview?<img src={preview} className="rounded-xl shadow max-h-[70vh]"/>:
                 <p className="text-gray-400">Preview will appear here</p>}
             </div>
 
-
-            {/* RIGHT Chat-Prompt like ChatGPT */}
+            {/* RIGHT Chat-Prompt */}
             <div className="col-span-12 md:col-span-3 flex flex-col">
               <div className="flex-1 overflow-y-auto bg-gray-50 rounded-xl p-3 space-y-2 mb-4">
                 {chat.map((m,i)=>(
@@ -169,18 +166,17 @@ export default function Home() {
                     <b>{m.role==="user"?"You":"AI"}:</b> {m.text}
                   </p>
                 ))}
+                <div ref={chatEndRef}></div>
               </div>
 
-              <div className="flex gap-2">
-                <textarea ref={inputRef}
-                  value={input} onChange={(e)=>setInput(e.target.value)}
-                  onKeyDown={keyPress}
-                  placeholder="Type laminate instruction and press Enter..."
-                  className="flex-1 p-3 rounded-xl border h-20 resize-none"/>
-              </div>
+              <textarea ref={inputRef}
+                value={input} onChange={(e)=>setInput(e.target.value)}
+                onKeyDown={keyPress}
+                placeholder="Type laminate instruction and press Enter..."
+                className="flex-1 p-3 rounded-xl border h-20 resize-none mb-2"/>
 
               {preview &&(
-                <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="mt-2 grid grid-cols-2 gap-3">
                   <button onClick={downloadImg} className="bg-black text-white py-2 rounded-lg">Download</button>
                   <button onClick={shareImg} className="bg-indigo-600 text-white py-2 rounded-lg">Share</button>
                 </div>
