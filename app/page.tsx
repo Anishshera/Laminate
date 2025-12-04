@@ -2,13 +2,15 @@
 import { useState } from 'react';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("design-studio");
+  const [activeTab, setActiveTab] = useState('design-studio');
   const [rawPhoto, setRawPhoto] = useState<string | null>(null);
   const [laminates, setLaminates] = useState<string[]>([]);
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState('');
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [randomPreview, setRandomPreview] = useState<string | null>(null);
+
+  // Multi-prompt session history
+  const [promptHistory, setPromptHistory] = useState<string[]>([]);
 
   const handleUpload = async (e: any, type: 'raw' | 'laminate') => {
     const file = e.target.files?.[0];
@@ -20,118 +22,211 @@ export default function Home() {
     const data = await res.json();
 
     if (type === 'raw') setRawPhoto(data.url);
-    else setLaminates(prev => [...prev, data.url].slice(0, 5));
+    else setLaminates((prev) => [...prev, data.url].slice(0, 5));
   };
 
-  const generateDesignStudio = () => {
-    if (!rawPhoto || laminates.length === 0) return;
+  const generate = async () => {
+    if (!rawPhoto) return;
     setLoading(true);
+
+    // Add prompt to history
+    setPromptHistory((prev) => [...prev, prompt]);
+
+    // Dummy AI generation logic for now
     setTimeout(() => {
-      setPreview("https://res.cloudinary.com/djzmfpmmv/image/upload/v1737070000/laminate-preview-sample.jpg");
+      // Generate a sample preview (replace with real AI call)
+      setPreview(
+        'https://res.cloudinary.com/djzmfpmmv/image/upload/v1737070000/laminate-preview-sample.jpg'
+      );
       setLoading(false);
     }, 3000);
   };
 
-  const generateRandomPreview = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setRandomPreview("https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80");
-      setLoading(false);
-    }, 2000);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-indigo-700 text-white py-6 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <h1 className="text-4xl font-bold">LaminateAI</h1>
-          <nav className="space-x-6 text-lg">
-            <button onClick={() => setActiveTab("instant")}>Instant Inspiration</button>
-            <button onClick={() => setActiveTab("quick")}>Quick Preview</button>
-            <button onClick={() => setActiveTab("design-studio")}>Design Studio</button>
-            <button disabled className="opacity-50 cursor-not-allowed">Brand Catalog</button>
-          </nav>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto p-6">
+
+        {/* Tabs */}
+        <div className="flex justify-center gap-6 mb-12 flex-wrap">
+          <button
+            onClick={() => setActiveTab('instant')}
+            className={`px-10 py-4 rounded-2xl font-bold transition ${
+              activeTab === 'instant'
+                ? 'bg-indigo-600 text-white shadow-2xl'
+                : 'bg-white text-gray-700 shadow-lg'
+            }`}
+          >
+            Instant Inspiration
+          </button>
+          <button
+            onClick={() => setActiveTab('quick')}
+            className={`px-10 py-4 rounded-2xl font-bold transition ${
+              activeTab === 'quick'
+                ? 'bg-indigo-600 text-white shadow-2xl'
+                : 'bg-white text-gray-700 shadow-lg'
+            }`}
+          >
+            Quick Preview
+          </button>
+          <button
+            onClick={() => setActiveTab('design-studio')}
+            className={`px-12 py-6 rounded-2xl text-2xl font-black transition shadow-2xl ${
+              activeTab === 'design-studio'
+                ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white'
+                : 'bg-white text-indigo-700'
+            }`}
+          >
+            Design Studio
+          </button>
         </div>
-      </header>
 
-      {/* Tabs Content */}
-      <main className="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
-        {/* Instant Inspiration */}
-        {activeTab === "instant" && (
-          <div className="space-y-8 text-center">
-            <h2 className="text-5xl font-bold text-indigo-900 mb-6">Instant Inspiration</h2>
-            <p className="text-xl text-gray-700 mb-4">Upload wall / base structure photo → AI gives random furniture + laminate idea!</p>
-            <input type="file" accept="image/*" onChange={generateRandomPreview} className="mb-6 file:py-3 file:px-6 file:bg-indigo-600 file:text-white file:rounded-full cursor-pointer"/>
-            {loading ? <p className="text-lg font-semibold text-gray-600">AI generating preview...</p> : randomPreview && <img src={randomPreview} className="mx-auto rounded-3xl shadow-2xl w-full max-w-lg"/>}
-          </div>
-        )}
-
-        {/* Quick Preview */}
-        {activeTab === "quick" && (
-          <div className="space-y-8 text-center">
-            <h2 className="text-5xl font-bold text-indigo-900 mb-6">Quick Preview</h2>
-            <p className="text-xl text-gray-700 mb-4">Upload raw plywood / unfinished furniture → AI applies random laminate preview!</p>
-            <input type="file" accept="image/*" onChange={generateRandomPreview} className="mb-6 file:py-3 file:px-6 file:bg-purple-600 file:text-white file:rounded-full cursor-pointer"/>
-            {loading ? <p className="text-lg font-semibold text-gray-600">AI generating preview...</p> : randomPreview && <img src={randomPreview} className="mx-auto rounded-3xl shadow-2xl w-full max-w-lg"/>}
-          </div>
-        )}
-
-        {/* Design Studio */}
-        {activeTab === "design-studio" && (
-          <div className="bg-white rounded-3xl shadow-2xl p-10 space-y-10">
-            <h2 className="text-5xl font-bold text-indigo-900 text-center">Design Studio – Full Control</h2>
-            <p className="text-xl text-gray-700 text-center">Upload raw plywood + multiple laminate photos → AI generates multi-section preview!</p>
-
-            <div className="grid lg:grid-cols-2 gap-10">
-              {/* Left */}
-              <div className="space-y-8">
-                <div>
-                  <h3 className="text-2xl font-bold mb-4">1. Raw Plywood Photo</h3>
-                  <input type="file" accept="image/*" onChange={(e) => handleUpload(e, 'raw')} className="w-full file:py-3 file:px-6 file:bg-indigo-600 file:text-white file:rounded-full"/>
-                  {rawPhoto && <img src={rawPhoto} className="mt-4 rounded-2xl shadow-md w-full"/>}
-                </div>
-
-                <div>
-                  <h3 className="text-2xl font-bold mb-4">2. Laminates (Max 5)</h3>
-                  <input type="file" accept="image/*" onChange={(e) => handleUpload(e, 'laminate')} className="w-full file:py-3 file:px-6 file:bg-purple-600 file:text-white file:rounded-full"/>
-                  <div className="grid grid-cols-3 gap-4 mt-4">
-                    {laminates.map((url, i) => <img key={i} src={url} className="rounded-xl shadow-md h-32 object-cover"/>)}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-2xl font-bold mb-4">3. Prompt (Optional)</h3>
+        {/* Tool Panels */}
+        <div className="bg-white rounded-3xl shadow-2xl p-8">
+          {/* Instant Inspiration */}
+          {activeTab === 'instant' && (
+            <div>
+              <h2 className="text-3xl font-bold text-center mb-6">Instant AI Furniture + Laminate Ideas</h2>
+              <div className="grid lg:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <p>Upload wall / cement / base structure photo to get random furniture + laminate preview.</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleUpload(e, 'raw')}
+                    className="w-full file:py-3 file:px-6 file:rounded-full file:bg-indigo-600 file:text-white"
+                  />
                   <textarea
-                    placeholder="Example: Dark walnut on doors, white drawers..."
+                    placeholder="Type prompt for specific style..."
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    className="w-full p-4 border-2 border-gray-300 rounded-xl h-32 resize-none focus:outline-none focus:border-indigo-600"
+                    className="w-full p-4 border rounded-xl h-32"
                   />
+                  <button
+                    onClick={generate}
+                    disabled={loading}
+                    className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold"
+                  >
+                    {loading ? 'AI Magic...' : 'Generate Preview'}
+                  </button>
                 </div>
-
-                <button onClick={generateDesignStudio} disabled={loading} className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-2xl text-2xl font-bold hover:from-indigo-700 hover:to-purple-700 shadow-lg">
-                  {loading ? "AI Magic Chal Raha Hai..." : "Generate Preview"}
-                </button>
-              </div>
-
-              {/* Right - Preview */}
-              <div className="space-y-6 text-center">
-                <h3 className="text-3xl font-bold text-indigo-900 mb-4">Your Preview</h3>
-                {preview ? <img src={preview} className="mx-auto rounded-2xl shadow-2xl w-full"/> : <p className="text-gray-500 text-xl">Upload raw plywood + laminate → Generate Preview</p>}
+                <div>
+                  {preview ? (
+                    <img src={preview} alt="Preview" className="w-full rounded-xl shadow" />
+                  ) : (
+                    <div className="w-full h-64 border-2 border-dashed rounded-xl flex items-center justify-center text-gray-500">
+                      Preview Yahan Aayega
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </main>
+          )}
 
-      {/* Footer */}
-      <footer className="bg-indigo-900 text-white py-10 mt-auto">
-        <div className="max-w-7xl mx-auto px-6 text-center space-y-4">
-          <p className="text-xl">© 2025 LaminateAI – Free AI Tool for Furniture & Plywood Design</p>
-          <p className="text-lg text-gray-200">Made with ❤️ by Anish Shera</p>
+          {/* Quick Preview */}
+          {activeTab === 'quick' && (
+            <div>
+              <h2 className="text-3xl font-bold text-center mb-6">Quick AI Laminate Preview</h2>
+              <div className="grid lg:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <p>Upload raw plywood / unfinished furniture photo and see random laminate applied.</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleUpload(e, 'raw')}
+                    className="w-full file:py-3 file:px-6 file:rounded-full file:bg-indigo-600 file:text-white"
+                  />
+                  <textarea
+                    placeholder="Type prompt to adjust style..."
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    className="w-full p-4 border rounded-xl h-32"
+                  />
+                  <button
+                    onClick={generate}
+                    disabled={loading}
+                    className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold"
+                  >
+                    {loading ? 'AI Magic...' : 'Generate Preview'}
+                  </button>
+                </div>
+                <div>
+                  {preview ? (
+                    <img src={preview} alt="Preview" className="w-full rounded-xl shadow" />
+                  ) : (
+                    <div className="w-full h-64 border-2 border-dashed rounded-xl flex items-center justify-center text-gray-500">
+                      Preview Yahan Aayega
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Design Studio */}
+          {activeTab === 'design-studio' && (
+            <div>
+              <h2 className="text-3xl font-bold text-center mb-6">Design Studio – Full Control</h2>
+              <div className="grid lg:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <p>Upload raw furniture / plywood photo once. Then use multiple prompts to tweak laminate results.</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleUpload(e, 'raw')}
+                    className="w-full file:py-3 file:px-6 file:rounded-full file:bg-indigo-600 file:text-white"
+                  />
+                  <div>
+                    <h3 className="font-bold mb-2">Upload Laminates (Up to 5)</h3>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleUpload(e, 'laminate')}
+                      className="w-full file:py-3 file:px-6 file:rounded-full file:bg-indigo-600 file:text-white"
+                    />
+                    <div className="grid grid-cols-3 gap-4 mt-4">
+                      {laminates.map((l, i) => (
+                        <img key={i} src={l} className="rounded-lg h-24 object-cover border" />
+                      ))}
+                    </div>
+                  </div>
+                  <textarea
+                    placeholder="Type prompt: Dark walnut on doors, white drawers, etc."
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    className="w-full p-4 border rounded-xl h-32"
+                  />
+                  <button
+                    onClick={generate}
+                    disabled={loading}
+                    className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold"
+                  >
+                    {loading ? 'AI Magic...' : 'Generate Preview'}
+                  </button>
+                  {promptHistory.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <h4 className="font-bold">Prompt History:</h4>
+                      <ul className="list-disc list-inside text-gray-700">
+                        {promptHistory.map((p, i) => (
+                          <li key={i}>{p}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  {preview ? (
+                    <img src={preview} alt="Preview" className="w-full rounded-xl shadow" />
+                  ) : (
+                    <div className="w-full h-64 border-2 border-dashed rounded-xl flex items-center justify-center text-gray-500">
+                      Preview Yahan Aayega
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </footer>
+      </div>
     </div>
   );
 }
