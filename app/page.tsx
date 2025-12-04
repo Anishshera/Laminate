@@ -1,153 +1,189 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("design-studio");
+  const [tab, setTab] = useState("studio");
 
   const [rawPhoto, setRawPhoto] = useState<string | null>(null);
   const [laminates, setLaminates] = useState<string[]>([]);
-  const [prompt, setPrompt] = useState("");
-  const [preview, setPreview] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [chat, setChat] = useState<{role:"user"|"ai",text:string}[]>([]);
+  const [input,setInput]=useState("");
+  const [preview,setPreview]=useState<string|null>(null);
+  const inputRef = useRef<HTMLTextAreaElement|null>(null);
 
-  // Image Upload Handler
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>, type: "raw" | "laminate") => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  /** Upload Handler **/
+  const handleUpload = (e:any,type:'photo'|'laminate')=>{
+    const file=e.target.files?.[0];
+    if(!file)return;
+    const url=URL.createObjectURL(file);
 
-    const url = URL.createObjectURL(file);
-
-    if (type === "raw") {
-      setRawPhoto(url);
-    } else if (type === "laminate") {
-      if (laminates.length >= 5) return alert("Max 5 laminates allowed");
-      setLaminates([...laminates, url]);
+    if(type==="photo") setRawPhoto(url);
+    if(type==="laminate") {
+      if(laminates.length>=5) return alert("Max 5 laminates allowed");
+      setLaminates([...laminates,url]);
     }
   };
 
-  // AI Generate Function (placeholder for now)
-  const generateDesignStudio = async () => {
-    setLoading(true);
+  /** ChatGPT style send **/
+  const sendPrompt = ()=>{
+    if(!input.trim()) return;
 
-    // Abhi AI nahi — hum preview me raw image dikha rahe
-    // later: SAM + laminate overlay + blend
-    setTimeout(() => {
-      setPreview(rawPhoto || null);
-      setLoading(false);
-    }, 1500);
+    setChat(c=>[...c,{role:"user",text:input}]);
+
+    // ⬇ Final AI later — abhi rawPhoto preview render karega
+    setTimeout(()=>{
+      setChat(c=>[...c,{role:"ai",text:"Applying laminate..."}]);
+      setPreview(rawPhoto);
+    },800);
+
+    setInput("");
   };
 
+  /** ENTER submit **/
+  const keyPress=(e:any)=>{
+    if(e.key==="Enter" && !e.shiftKey){
+      e.preventDefault();
+      sendPrompt();
+    }
+  };
+
+  /** Download **/
+  const downloadImg = ()=>{
+    if(!preview)return;
+    const link=document.createElement("a");
+    link.href=preview;
+    link.download="design-preview.jpg";
+    link.click();
+  };
+
+  /** Share **/
+  const shareImg=()=>{
+    if(navigator.share && preview){
+      navigator.share({
+        title:"Laminate AI Result",
+        text:"Check my design preview",
+        url:preview
+      });
+    }else alert("Sharing not supported in this browser");
+  };
+
+
   return (
-    <div className="min-h-screen bg-gray-100 p-10 text-gray-900">
+    <div className="min-h-screen bg-gray-100 p-8 text-gray-900">
 
-      <header className="text-center mb-10">
-        <h1 className="text-5xl font-extrabold text-indigo-700 drop-shadow">Home Decor AI</h1>
-        <p className="text-lg mt-2 text-gray-600 font-medium">
-          Upload furniture → Apply Laminates → AI Preview
-        </p>
-      </header>
+      {/* Header */}
+      <h1 className="text-5xl font-extrabold text-center text-indigo-700 mb-6">
+        Home Decor AI Studio
+      </h1>
 
-      {/* Navigation Tabs */}
-      <div className="flex justify-center gap-6 mb-10">
-        <button
-          onClick={() => setActiveTab("inspiration")}
-          className={`px-6 py-2 font-semibold rounded-xl transition-all ${
-            activeTab === "inspiration" ? "bg-indigo-600 text-white shadow-lg" : "bg-white"
-          }`}
-        >
-          Instant Inspiration
-        </button>
-
-        <button
-          onClick={() => setActiveTab("quick")}
-          className={`px-6 py-2 font-semibold rounded-xl transition-all ${
-            activeTab === "quick" ? "bg-indigo-600 text-white shadow-lg" : "bg-white"
-          }`}
-        >
-          Quick Preview
-        </button>
-
-        <button
-          onClick={() => setActiveTab("design-studio")}
-          className={`px-6 py-2 font-bold rounded-xl shadow transition-all ${
-            activeTab === "design-studio" ? "bg-purple-700 text-white shadow-2xl scale-105" : "bg-white"
-          }`}
-        >
-          Design Studio
-        </button>
+      {/* TABS */}
+      <div className="flex gap-4 justify-center mb-10">
+        {[
+          {id:"instant",label:"⚡ Instant Inspiration"},
+          {id:"quick",label:"🖼 Quick Preview"},
+          {id:"studio",label:"🎨 Design Studio"}
+        ].map(t=>(
+          <button key={t.id}
+            onClick={()=>setTab(t.id)}
+            className={`px-6 py-3 rounded-xl font-semibold transition ${
+                tab===t.id?"bg-indigo-600 text-white shadow-lg":"bg-white shadow"
+            }`}>
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {/* 📌 TAB SCREENS */}
 
-      {activeTab === "design-studio" && (
-        <div className="bg-white rounded-3xl shadow-2xl p-10">
-          <h2 className="text-4xl font-bold text-indigo-900 text-center mb-8">Design Studio – Workspace</h2>
+      {/* ---------------- TOOL - 1 : Instant Inspiration ---------------- */}
+      {tab==="instant" &&(
+        <div className="bg-white p-10 rounded-3xl shadow-xl text-center">
+          <h2 className="text-3xl font-bold mb-3">Instant Inspiration 🔥</h2>
+          <p className="text-gray-600 mb-6">AI randomly generates laminate ideas for your furniture.</p>
+
+          <button className="px-8 py-4 text-xl bg-purple-600 text-white rounded-xl font-bold">
+            Generate Ideas (Placeholder)
+          </button>
+
+          <p className="text-sm text-gray-400 mt-3">Later we will connect AI moodboard generator.</p>
+        </div>
+      )}
+
+
+      {/* ---------------- TOOL - 2 : Quick Preview ---------------- */}
+      {tab==="quick" &&(
+        <div className="bg-white p-10 rounded-3xl shadow-xl">
+          <h2 className="text-3xl font-bold mb-5 text-center">Quick Preview 🖼</h2>
+
+          <input type="file" accept="image/*"
+            onChange={(e)=>setPreview(URL.createObjectURL(e.target.files?.[0]||null))}
+            className="file:px-5 file:py-2 file:bg-indigo-600 file:text-white rounded mb-6 block mx-auto"/>
+
+          {preview?
+            <img src={preview} className="mx-auto rounded-xl shadow-lg max-h-[70vh]"/>:
+            <p className="text-center text-gray-500">Upload image to preview</p>
+          }
+        </div>
+      )}
+
+
+      {/* ---------------- TOOL - 3 : Design Studio AI (MAIN) ---------------- */}
+      {tab==="studio" &&(
+        <div className="bg-white shadow-2xl rounded-3xl p-10">
+          <h2 className="text-3xl font-bold text-center mb-8 text-indigo-700">Design Studio</h2>
 
           <div className="grid grid-cols-12 gap-6">
 
-            {/* LEFT - Upload */}
-            <div className="col-span-12 md:col-span-3 space-y-6 border-r pr-6">
-              <h3 className="font-bold text-xl">Upload Section</h3>
+            {/* LEFT Upload */}
+            <div className="col-span-12 md:col-span-3 space-y-5">
+              <p className="font-bold">Upload Furniture</p>
+              <input type="file" accept="image/*"
+                onChange={(e)=>handleUpload(e,"photo")}
+                className="file:bg-indigo-600 file:text-white file:px-4 file:py-2 rounded w-full"/>
 
-              <div>
-                <p className="font-semibold">Furniture Photo</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleUpload(e,"raw")}
-                  className="w-full mt-2 file:bg-indigo-600 file:text-white file:px-4 file:py-2 rounded-lg"
-                />
-                {rawPhoto && <img src={rawPhoto} className="rounded-lg shadow mt-3" />}
+              {rawPhoto && <img src={rawPhoto} className="rounded shadow mt-2"/>}
+
+              <p className="font-bold mt-5">Add Laminates (5 max)</p>
+              <input type="file" accept="image/*"
+                onChange={(e)=>handleUpload(e,"laminate")}
+                className="file:bg-purple-600 file:text-white file:px-4 file:py-2 rounded w-full"/>
+
+              <div className="grid grid-cols-3 gap-2">
+                {laminates.map((l,i)=><img key={i} src={l} className="rounded shadow h-16"/>)}
+              </div>
+            </div>
+
+
+            {/* CENTER Preview */}
+            <div className="col-span-12 md:col-span-6 flex items-center justify-center bg-gray-50 rounded-xl p-4">
+              {preview?<img src={preview} className="rounded-xl shadow max-h-[70vh]"/>:
+                <p className="text-gray-400">Preview will appear here</p>}
+            </div>
+
+
+            {/* RIGHT Chat-Prompt like ChatGPT */}
+            <div className="col-span-12 md:col-span-3 flex flex-col">
+              <div className="flex-1 overflow-y-auto bg-gray-50 rounded-xl p-3 space-y-2 mb-4">
+                {chat.map((m,i)=>(
+                  <p key={i} className={`${m.role==="user"?"text-blue-600":"text-gray-800"} text-sm`}>
+                    <b>{m.role==="user"?"You":"AI"}:</b> {m.text}
+                  </p>
+                ))}
               </div>
 
-              <div>
-                <p className="font-semibold">Laminates (Max 5)</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleUpload(e,"laminate")}
-                  className="w-full mt-2 file:bg-purple-600 file:text-white file:px-4 file:py-2 rounded-lg"
-                />
-                <div className="grid grid-cols-3 gap-2 mt-3">
-                  {laminates.map((l, i) => (
-                    <img key={i} src={l} className="rounded shadow h-16 object-cover" />
-                  ))}
+              <div className="flex gap-2">
+                <textarea ref={inputRef}
+                  value={input} onChange={(e)=>setInput(e.target.value)}
+                  onKeyDown={keyPress}
+                  placeholder="Type laminate instruction and press Enter..."
+                  className="flex-1 p-3 rounded-xl border h-20 resize-none"/>
+              </div>
+
+              {preview &&(
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <button onClick={downloadImg} className="bg-black text-white py-2 rounded-lg">Download</button>
+                  <button onClick={shareImg} className="bg-indigo-600 text-white py-2 rounded-lg">Share</button>
                 </div>
-              </div>
-            </div>
-
-            {/* CENTER - Main Preview */}
-            <div className="col-span-12 md:col-span-6 flex items-center justify-center bg-gray-50 rounded-xl shadow p-4">
-              {preview
-                ? <img src={preview} className="max-h-[70vh] rounded-xl shadow-lg"/>
-                : <p className="text-gray-500 text-lg">Preview will appear here</p>
-              }
-            </div>
-
-            {/* RIGHT - AI Control */}
-            <div className="col-span-12 md:col-span-3 space-y-6 border-l pl-6">
-              <h3 className="font-bold text-xl">AI Control</h3>
-
-              <textarea
-                placeholder="Prompt: Dark walnut on doors, glossy white drawers..."
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                className="w-full border rounded-xl p-3 h-32"
-              />
-
-              <button
-                onClick={generateDesignStudio}
-                disabled={loading}
-                className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold"
-              >
-                {loading ? "Processing..." : "Apply Laminate"}
-              </button>
-
-              {preview && (
-                <button className="w-full bg-black text-white py-2 rounded-xl font-semibold">
-                  Download Image
-                </button>
               )}
             </div>
           </div>
