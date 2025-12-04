@@ -7,7 +7,6 @@ const replicate = new Replicate({
 
 /**
  * Detect furniture sections in an image using SAM2 model
- * @param imageUrl - URL of the image to segment
  */
 export async function segmentImage(imageUrl: string) {
   const output = await replicate.run(
@@ -33,7 +32,7 @@ export async function applyLaminate(
   masks: any
 ) {
   const output = await replicate.run(
-    "black-forest-labs/flux-schnell:2a4f2a4f2a4f2a4f2a4f2a4f2a4f2a4f",
+    "black-forest-labs/flux-schnell:2a4f2a4f2a4f2a4f2a4f2a4f2a4f",
     {
       input: {
         prompt: `Apply laminate texture from ${laminateUrl} to detected furniture sections in ${rawImageUrl}. Use masks: ${JSON.stringify(
