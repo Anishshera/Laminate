@@ -1,6 +1,6 @@
 import Replicate from "replicate";
 
-// Using your API token directly
+// Directly use your API token
 const replicate = new Replicate({
   auth: "6cc931f4a19ec156307f2ea4ef17c5ec36a5f5e3",
 });
