@@ -3,13 +3,26 @@ import { useState } from 'react';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("design-studio");
+
+  // Design Studio States
   const [rawPhoto, setRawPhoto] = useState<string | null>(null);
   const [laminates, setLaminates] = useState<string[]>([]);
   const [prompt, setPrompt] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleUpload = async (e: any, type: 'raw' | 'laminate') => {
+  // Instant Inspiration States
+  const [inspirePrompt, setInspirePrompt] = useState("");
+  const [inspireResult, setInspireResult] = useState<string | null>(null);
+  const [inspireLoading, setInspireLoading] = useState(false);
+
+  // Quick Preview States
+  const [quickPhoto, setQuickPhoto] = useState<string | null>(null);
+  const [quickPreview, setQuickPreview] = useState<string | null>(null);
+  const [quickLoading, setQuickLoading] = useState(false);
+
+  // Common Upload Handler
+  const handleUpload = async (e: any, type: string) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -19,16 +32,38 @@ export default function Home() {
     const data = await res.json();
 
     if (type === 'raw') setRawPhoto(data.url);
-    else setLaminates(prev => [...prev, data.url].slice(0, 5));
+    else if (type === 'laminate') setLaminates(prev => [...prev, data.url].slice(0, 5));
+    else if (type === 'quick') setQuickPhoto(data.url);
   };
 
-  const generate = () => {
+  // Design Studio Generate
+  const generateDesign = () => {
     if (!rawPhoto || laminates.length === 0) return;
     setLoading(true);
     setTimeout(() => {
       setPreview("https://res.cloudinary.com/djzmfpmmv/image/upload/v1737070000/laminate-preview-sample.jpg");
       setLoading(false);
     }, 3000);
+  };
+
+  // Instant Inspiration Generate
+  const generateInspiration = () => {
+    if (!inspirePrompt) return;
+    setInspireLoading(true);
+    setTimeout(() => {
+      setInspireResult("https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80");
+      setInspireLoading(false);
+    }, 2000);
+  };
+
+  // Quick Preview Generate
+  const generateQuick = () => {
+    if (!quickPhoto) return;
+    setQuickLoading(true);
+    setTimeout(() => {
+      setQuickPreview("https://res.cloudinary.com/djzmfpmmv/image/upload/v1737070000/laminate-preview-sample.jpg");
+      setQuickLoading(false);
+    }, 1500);
   };
 
   return (
@@ -40,7 +75,6 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero + Title */}
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
         <div className="max-w-7xl mx-auto px-6 pt-16 pb-10 text-center">
           <h1 className="text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-4">
@@ -50,33 +84,8 @@ export default function Home() {
             Free AI Laminate Try-On Tool – 5 Second Mein Perfect Preview!
           </p>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Apna plywood ka kaam hua photo upload karo → Laminate lagaao → Client ko turant dikhao! No login • No watermark • Unlimited free
+            Apna plywood ka kaam hua photo upload karo → Laminate lagaao → Client ko turant dikhao!
           </p>
-        </div>
-
-        {/* How to Use Section */}
-        <div className="bg-gradient-to-r from-indigo-900 to-purple-900 text-white py-20 -mt-10">
-          <div className="max-w-6xl mx-auto px-6 text-center">
-            <h2 className="text-5xl md:text-6xl font-bold mb-12">3 Steps Mein Ho Gaya!</h2>
-            <div className="grid md:grid-cols-3 gap-10">
-              <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-10 hover:scale-105 transition">
-                <div className="text-7xl mb-6">1</div>
-                <h3 className="text-3xl font-bold mb-4">Raw Photo Upload</h3>
-                <p className="text-xl opacity-90">Apna plywood / furniture ka kaam hua photo upload karo</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-10 hover:scale-105 transition">
-                <div className="text-7xl mb-6">2</div>
-                <h3 className="text-3xl font-bold mb-4">Laminate Daalo ya Likho</h3>
-                <p className="text-xl opacity-90">5 photos ya prompt likho: "Dark walnut doors, white drawers"</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-10 hover:scale-105 transition">
-                <div className="text-7xl mb-6">3</div>
-                <h3 className="text-3xl font-bold mb-4">Generate & Show Client</h3>
-                <p className="text-xl opacity-90">5 second mein HD preview → Download → Client bolega "Wah bhai!"</p>
-              </div>
-            </div>
-            <p className="text-2xl mt-12 font-semibold opacity-90">100% Free • No Login • Unlimited Use</p>
-          </div>
         </div>
 
         {/* Tabs */}
@@ -88,7 +97,48 @@ export default function Home() {
             <button disabled className="px-10 py-5 rounded-2xl bg-gray-300 text-gray-600 text-xl">Brand Catalog (Soon)</button>
           </div>
 
-          {/* Design Studio */}
+          {/* Instant Inspiration Tab */}
+          {activeTab === "instant" && (
+            <div className="bg-white rounded-3xl shadow-2xl p-10">
+              <h2 className="text-4xl font-bold text-center mb-6 text-indigo-900">Instant Inspiration – Quick Ideas</h2>
+              <textarea
+                placeholder="Type your idea: 'Dark walnut doors, white drawers...'"
+                value={inspirePrompt}
+                onChange={(e) => setInspirePrompt(e.target.value)}
+                className="w-full p-6 border-4 border-indigo-200 rounded-3xl text-xl focus:border-indigo-600 outline-none h-32 resize-none mb-6"
+              />
+              <button
+                onClick={generateInspiration}
+                disabled={inspireLoading}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-5 rounded-3xl text-2xl font-black hover:from-indigo-700 hover:to-purple-700 disabled:opacity-70 transition shadow-2xl mb-6"
+              >
+                {inspireLoading ? "Generating..." : "Get Inspiration"}
+              </button>
+              {inspireResult && (
+                <img src={inspireResult} alt="Inspiration" className="w-full rounded-3xl shadow-2xl mt-6" />
+              )}
+            </div>
+          )}
+
+          {/* Quick Preview Tab */}
+          {activeTab === "quick" && (
+            <div className="bg-white rounded-3xl shadow-2xl p-10">
+              <h2 className="text-4xl font-bold text-center mb-6 text-indigo-900">Quick Preview – Fast Check</h2>
+              <input type="file" accept="image/*" onChange={(e) => handleUpload(e, 'quick')} className="w-full file:mr-6 file:py-5 file:px-10 file:rounded-full file:border-0 file:bg-gradient-to-r file:from-indigo-600 file:to-purple-600 file:text-white text-xl cursor-pointer mb-6" />
+              <button
+                onClick={generateQuick}
+                disabled={quickLoading}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-5 rounded-3xl text-2xl font-black hover:from-indigo-700 hover:to-purple-700 disabled:opacity-70 transition shadow-2xl"
+              >
+                {quickLoading ? "Generating..." : "Generate Preview"}
+              </button>
+              {quickPreview && (
+                <img src={quickPreview} alt="Quick Preview" className="w-full rounded-3xl shadow-2xl mt-6" />
+              )}
+            </div>
+          )}
+
+          {/* Design Studio Tab */}
           {activeTab === "design-studio" && (
             <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
               <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-8 text-center">
@@ -104,7 +154,7 @@ export default function Home() {
                       <h3 className="text-3xl font-bold mb-5 text-indigo-900">1. Raw Plywood Photo</h3>
                       <input type="file" accept="image/*" onChange={(e) => handleUpload(e, 'raw')} className="w-full file:mr-6 file:py-5 file:px-10 file:rounded-full file:border-0 file:bg-gradient-to-r file:from-indigo-600 file:to-purple-600 file:text-white text-xl cursor-pointer" />
                       {rawPhoto && <img src={rawPhoto} alt="Raw" className="mt-6 rounded-3xl shadow-2xl w-full border-4 border-indigo-100" />}
-                      <p className="mt-2 text-gray-600">Apna plywood / furniture ka kaam hua photo yahan dikh raha hai</p>
+                      <p className="mt-2 text-gray-600">Apna plywood ka kaam hua photo yahan dikh raha hai</p>
                     </div>
 
                     <div>
@@ -135,7 +185,7 @@ export default function Home() {
                     </div>
 
                     <button
-                      onClick={generate}
+                      onClick={generateDesign}
                       disabled={loading}
                       className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-8 rounded-3xl text-3xl font-black hover:from-indigo-700 hover:to-purple-700 disabled:opacity-70 transition shadow-2xl"
                     >
