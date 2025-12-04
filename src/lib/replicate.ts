@@ -8,7 +8,6 @@ const replicate = new Replicate({
 /**
  * Detect furniture sections in an image using SAM2 model
  * @param imageUrl - URL of the image to segment
- * @returns segmentation output from the model
  */
 export async function segmentImage(imageUrl: string) {
   const output = await replicate.run(
@@ -20,16 +19,12 @@ export async function segmentImage(imageUrl: string) {
       },
     }
   );
+
   return output;
 }
 
 /**
  * Apply laminate texture to detected furniture sections
- * @param rawImageUrl - Original furniture image
- * @param laminateUrl - Laminate texture image
- * @param prompt - Additional instructions
- * @param masks - Segmentation masks
- * @returns URL of the final image
  */
 export async function applyLaminate(
   rawImageUrl: string,
@@ -48,5 +43,6 @@ export async function applyLaminate(
       },
     }
   );
+
   return output[0] as string;
 }
