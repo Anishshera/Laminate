@@ -108,5 +108,29 @@ export default function Home() {
         )}
       </div>
     </div>
+    {/* How to Use Section – bilkul top pe laga dena */}
+<div className="bg-indigo-900 text-white py-16 mt-10 rounded-3xl">
+  <div className="max-w-6xl mx-auto px-6 text-center">
+    <h2 className="text-4xl md:text-5xl font-bold mb-10">3 Steps Mein Perfect Design</h2>
+    <div className="grid md:grid-cols-3 gap-8">
+      <div className="bg-white/10 backdrop-blur rounded-2xl p-8">
+        <div className="text-6xl mb-4">1️⃣</div>
+        <h3 className="text-2xl font-bold mb-3">Raw Plywood Photo Upload Karo</h3>
+        <p className="text-lg opacity-90">Wardrobe, kitchen, table – jo bhi bana rahe ho</p>
+      </div>
+      <div className="bg-white/10 backdrop-blur rounded-2xl p-8">
+        <div className="text-6xl mb-4">2️⃣</div>
+        <h3 className="text-2xl font-bold mb-3">Laminate Photos Daalo ya Prompt Likho</h3>
+        <p className="text-lg opacity-90">Max 5 laminates ya type karo: "Dark walnut doors, white drawers"</p>
+      </div>
+      <div className="bg-white/10 backdrop-blur rounded-2xl p-8">
+        <div className="text-6xl mb-4">3️⃣</div>
+        <h3 className="text-2xl font-bold mb-3">Generate → Download → Client ko Dikhao!</h3>
+        <p className="text-lg opacity-90">5 second mein HD preview ready – 100% Free!</p>
+      </div>
+    </div>
+    <p className="text-xl mt-10 opacity-80">No login • No watermark • Unlimited use</p>
+  </div>
+</div>
   );
 }
